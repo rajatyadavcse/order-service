@@ -1,0 +1,72 @@
+package com.kitchen.order.dao;
+
+import com.kitchen.order.enums.OrderStatus;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "orders")
+@Data
+public class OrderDAO {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long orderId;
+
+    /**
+     * References public.dinning_table composite PK (tableNo + restaurantId).
+     * Validated via restaurant-service before persisting.
+     */
+    @Column(nullable = false)
+    private Long tableNo;
+
+    /**
+     * References public.restaurant.restaurantId.
+     * Validated via restaurant-service before persisting.
+     */
+    @Column(nullable = false)
+    private Long restaurantId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OrderStatus status;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount;
+
+    /** Optional customer notes (e.g. "no onions") */
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    /** Populated only when status = CANCELLED */
+    @Column(columnDefinition = "TEXT")
+    private String reason;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<OrderItemDAO> items = new ArrayList<>();
+
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = OrderStatus.PENDING;
+        }
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}

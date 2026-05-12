@@ -1,0 +1,24 @@
+package com.kitchen.order.dto.response;
+
+import com.kitchen.order.enums.OrderStatus;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+public class OrderResponse {
+
+    private Long orderId;
+    private Long restaurantId;
+    private Long tableNo;
+    private OrderStatus status;
+    private BigDecimal totalAmount;
+    private String notes;
+    private String reason;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private List<OrderItemResponse> items;
+}
